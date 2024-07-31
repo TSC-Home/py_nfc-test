@@ -16,22 +16,36 @@ class PN7150:
 
     def reset(self):
         GPIO.output(self.ven_pin, GPIO.LOW)
-        time.sleep(0.1)
+        time.sleep(0.5)  # Wartezeit erhöhen
         GPIO.output(self.ven_pin, GPIO.HIGH)
-        time.sleep(0.1)
+        time.sleep(0.5)  # Wartezeit erhöhen
 
     def read_register(self, reg):
-        return self.bus.read_byte_data(self.address, reg)
+        try:
+            result = self.bus.read_byte_data(self.address, reg)
+            print(f"Register 0x{reg:02X} gelesen: 0x{result:02X}")
+            return result
+        except Exception as e:
+            print(f"Fehler beim Lesen des Registers 0x{reg:02X}: {e}")
+            return None
 
     def write_register(self, reg, value):
-        self.bus.write_byte_data(self.address, reg, value)
+        try:
+            self.bus.write_byte_data(self.address, reg, value)
+            print(f"Register 0x{reg:02X} geschrieben: 0x{value:02X}")
+        except Exception as e:
+            print(f"Fehler beim Schreiben in das Register 0x{reg:02X}: {e}")
 
     def test_communication(self):
         # Beispiel: Lese ein bekanntes Register, z.B. Product ID
         try:
             product_id = self.read_register(0x00)
-            print(f"Kommunikation erfolgreich. Produkt-ID: 0x{product_id:02X}")
-            return True
+            if product_id is not None:
+                print(f"Kommunikation erfolgreich. Produkt-ID: 0x{product_id:02X}")
+                return True
+            else:
+                print("Produkt-ID konnte nicht gelesen werden.")
+                return False
         except Exception as e:
             print(f"Kommunikation fehlgeschlagen: {e}")
             return False
